@@ -22,70 +22,73 @@
         /// Reads a 16 bit int (2 bytes) from the stream.
         /// </summary>
         /// <returns>The read 16 bit int.</returns>
-        public override short ReadInt16()
+        public override short ReadInt16 ()
         {
-            short num = base.ReadInt16();
-            unsafe
-            {
-                SwapBytes((byte*)&num, 2);
-            }
+            short num = base.ReadInt16 ();
+			var bytes = BitConverter.GetBytes (num);
+			SwapBytes (bytes, 2);
 
-            return num;
+            return BitConverter.ToInt16 (bytes, 0);
         }
 
         /// <summary>
         /// Reads a 32 bit int (4 bytes) from the stream.
         /// </summary>
         /// <returns>The read 32 bit int.</returns>
-        public override unsafe int ReadInt32()
+        public override int ReadInt32 ()
         {
-            int num = base.ReadInt32();
-            SwapBytes((byte*)&num, 4);
-            return num;
+            int num = base.ReadInt32 ();
+			var bytes = BitConverter.GetBytes (num);
+            SwapBytes (bytes, 4);
+            return BitConverter.ToInt32 (bytes, 0);
         }
 
         /// <summary>
         /// Reads a 64 bit int (8 bytes) from the stream.
         /// </summary>
         /// <returns>The read 64 bit int.</returns>
-        public override unsafe long ReadInt64()
+        public override long ReadInt64()
         {
             long num = base.ReadInt64();
-            SwapBytes((byte*)&num, 8);
-            return num;
+			var bytes = BitConverter.GetBytes (num);
+            SwapBytes (bytes, 8);
+            return BitConverter.ToInt64 (bytes, 0);
         }
 
         /// <summary>
         /// Reads an unsigned 16 bit int (2 bytes) from the stream.
         /// </summary>
         /// <returns>The read unsigned 16 bit int.</returns>
-        public override unsafe ushort ReadUInt16()
+        public override ushort ReadUInt16()
         {
             ushort num = base.ReadUInt16();
-            SwapBytes((byte*)&num, 2);
-            return num;
+			var bytes = BitConverter.GetBytes (num);
+            SwapBytes (bytes, 2);
+			return BitConverter.ToUInt16 (bytes, 0);
         }
 
         /// <summary>
         /// Reads an unsigned 32 bit int (4 bytes) from the stream.
         /// </summary>
         /// <returns>The read unsigned 32 bit int.</returns>
-        public override unsafe uint ReadUInt32()
+        public override uint ReadUInt32()
         {
             uint num = base.ReadUInt32();
-            SwapBytes((byte*)&num, 4);
-            return num;
+			var bytes = BitConverter.GetBytes (num);
+            SwapBytes (bytes, 4);
+            return BitConverter.ToUInt32 (bytes, 0);
         }
 
         /// <summary>
         /// Reads an unsigned 64 bit int (8 bytes) from the stream.
         /// </summary>
         /// <returns>The read unsigned 64 bit int.</returns>
-        public override unsafe ulong ReadUInt64()
+        public override ulong ReadUInt64()
         {
             ulong num = base.ReadUInt64();
-            SwapBytes((byte*)&num, 8);
-            return num;
+			var bytes = BitConverter.GetBytes (num);
+            SwapBytes (bytes, 8);
+            return BitConverter.ToUInt64 (bytes, 0);
         }
 
         /// <summary>
@@ -180,20 +183,20 @@
             Seek(bytes);
         }
 
-        /// <summary>
-        /// Swaps the number of specified bytes in the stream.
-        /// </summary>
-        /// <param name="ptr">The pointer to the byte stream.</param>
-        /// <param name="length">The number of bytes to swap.</param>
-        private unsafe void SwapBytes(byte* ptr, int length)
-        {
-            for (long index = 0L; index < (long)(length / 2); ++index)
-            {
-                byte num = ptr[index];
-                ptr[index] = *(ptr + length - index - 1);
-                *(ptr + length - index - 1) = num;
-            }
-        }
+		/// <summary>
+		/// Swaps the number of specified bytes in the stream.
+		/// </summary>
+		/// <param name="ptr">The pointer to the byte stream.</param>
+		/// <param name="length">The number of bytes to swap.</param>
+		void SwapBytes(byte[] bytes, int length)
+		{
+			for (long index = 0L; index < (long)(length / 2); ++index)
+			{
+				byte num = bytes[index];
+				bytes [index] = bytes [length - index - 1];
+				bytes [length - index - 1] = num;
+			}
+		}
 
         /// <summary>
         /// Searches through the stream for the given byte array.  If found, the position in the stream
