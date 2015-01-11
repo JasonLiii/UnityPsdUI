@@ -18,7 +18,6 @@ namespace PsdUI
 
 			public Point position;
 			public Size size;
-			public int zIndex;
 
 			public List<PsdLayer> children;
 		}
@@ -79,6 +78,7 @@ namespace PsdUI
 				var currentRoot = layerStack.Peek ();
 
 				if (isLayerGroupEnd (layer)) {
+					currentRoot.children.Reverse ();
 					layerStack.Pop ();
 					continue;
 				} else if (isLayerGroupBegin (layer)) {
@@ -91,13 +91,16 @@ namespace PsdUI
 
 					layerStack.Push (layerGroup);
 					continue;
+				} else if (!layer.Visible) {
+					continue;
 				}
 
-				var psdLayer = toPsdLayer (layer);
-				psdLayer.zIndex = layers.Count - i - 1;
 
+				var psdLayer = toPsdLayer (layer);
 				currentRoot.children.Add (psdLayer);
 			}
+
+			rootLayer.children.Reverse ();
 
 			return rootLayer;
 		}

@@ -87,7 +87,6 @@ namespace PsdUI
 			
 			layerRectTransform.sizeDelta = new Vector2 (width, height);
 			layerRectTransform.position = new Vector3 (x + width / 2, canvasSize.Height - y - height / 2, 0);
-			layerRectTransform.SetSiblingIndex (layer.zIndex);
 
 			if (layer.children != null) {
 				foreach (var childLayer in layer.children) {
