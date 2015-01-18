@@ -118,7 +118,7 @@ namespace PsdUI
 
 		static bool isLayerGroupBegin (Layer layer)
 		{
-			return layer.IsPixelDataIrrelevant;
+			return layer.IsPixelDataIrrelevant && layer.Rect.Height == 0;
 		}
 		
 		static bool isLayerGroupEnd (Layer layer)
