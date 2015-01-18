@@ -131,7 +131,7 @@
             }
             catch (ArgumentException)
             {
-                UnityEngine.Debug.LogError("An invalid character was found in the string.");
+                //UnityEngine.Debug.LogError("An invalid character was found in the string.");
             }
 
             if (string.IsNullOrEmpty(str))
@@ -165,7 +165,7 @@
             }
             catch (ArgumentException)
             {
-                UnityEngine.Debug.LogError("An invalid character was found in the string.");
+                //UnityEngine.Debug.LogError("An invalid character was found in the string.");
             }
 
             return str;
