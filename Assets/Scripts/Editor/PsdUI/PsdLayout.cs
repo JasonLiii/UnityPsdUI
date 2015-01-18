@@ -116,7 +116,6 @@ namespace PsdUI
 		{
 			foreach (var fontName in fontNames) {
 				var name = fontName.Replace (" ", "");
-				Debug.Log ("Comparing font " + name + " to " + fontNameToCompare);
 				if (name.Contains (fontNameToCompare)) {
 					return true;
 				}
@@ -127,11 +126,9 @@ namespace PsdUI
 
 		Font findFontByName (string fontName)
 		{
-			Debug.Log ("Searching font by name " + fontName);
 			var fonts = Directory.GetFiles (_fontsFolder, "*.ttf");
 
 			foreach (var fontFileName in fonts) {
-				Debug.Log ("Loading font " + fontFileName);
 				var fontFilePath = Path.Combine (_fontsFolder, Path.GetFileName (fontFileName));
 				var font = Resources.LoadAssetAtPath<Font> (fontFilePath);
 
