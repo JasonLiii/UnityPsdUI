@@ -101,8 +101,10 @@ namespace PsdUI
 
 		static List<string> copyAssets (string psdFileName, string layersOutputDirectory)
 		{
+			Directory.CreateDirectory (layersOutputDirectory);
 			var assetsDirectory = assetsDirectoryForPsd (psdFileName);
-			var files = new List<string> (Directory.GetFiles (assetsDirectory));
+			var result = new List<string> ();
+			var files = Directory.GetFiles (assetsDirectory);
 
 			foreach (var file in files) {
 				var fileName = Path.GetFileName (file);
@@ -110,9 +112,10 @@ namespace PsdUI
 				var target = Path.Combine (layersOutputDirectory, fileName);
 
 				File.Copy (source, target, true);
+				result.Add (target);
 			}
 
-			return files;
+			return result;
 		}
 
 		static void createLayoutFromPsd (string assetPath)
