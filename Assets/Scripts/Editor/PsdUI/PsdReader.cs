@@ -19,6 +19,13 @@ namespace PsdUI
 			public Point position;
 			public Size size;
 
+			public bool isTextLayer;
+			public string fontName;
+			public float fontSize;
+			public string text;
+			public TextJustification justification;
+			public Color fillColor;
+
 			public List<PsdLayer> children;
 		}
 
@@ -32,6 +39,11 @@ namespace PsdUI
 		{
 			_psdFileName = psdFileName;
 			_psdFile = new PsdFile (psdFileName);
+		}
+
+		static bool canExtract (Layer layer)
+		{
+			return !layer.IsPixelDataIrrelevant && layer.Channels.Count == 4 && !layer.IsTextLayer;
 		}
 
 		public List<string> extractLayers (string layersOutputDirectory)
@@ -48,6 +60,7 @@ namespace PsdUI
 
 				//TODO: 
 				if (extractedFiles.Contains (layerFileName)) continue;
+				if (!canExtract (layer)) continue;
 				
 				var data = BitmapUtility.layerData32argb (layer);
 				BitmapUtility.writeBitmapFile (layerFileName, layer.Rect.Width, layer.Rect.Height, data);
@@ -110,7 +123,13 @@ namespace PsdUI
 			var psdLayer = new PsdLayer {
 				name = layer.Name,
 				size = new Size (layer.Rect.Width, layer.Rect.Height),
-				position = new Point (layer.Rect.X, layer.Rect.Y)
+				position = new Point (layer.Rect.X, layer.Rect.Y),
+				isTextLayer = layer.IsTextLayer,
+				text = layer.Text,
+				fontName = layer.FontName,
+				fontSize = layer.FontSize,
+				justification = layer.Justification,
+				fillColor = layer.FillColor
 			};
 
 			return psdLayer;

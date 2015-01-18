@@ -9,10 +9,12 @@ namespace PsdUI
 	public class PsdLayout
 	{
 		string _sourceImagesFolder;
+		string _fontsFolder;
 
-		public PsdLayout (string sourceImagesFolder)
+		public PsdLayout (string sourceImagesFolder, string fontsFolder)
 		{
 			_sourceImagesFolder = sourceImagesFolder;
+			_fontsFolder = fontsFolder;
 		}
 
 		public void createOrUpdatePrefab (string prefabFileName, PsdReader.PsdLayer rootLayer)
@@ -55,6 +57,21 @@ namespace PsdUI
 			return new Vector3 (point.X, point.Y, z);
 		}
 
+		static string cleanLayerName (string sourceLayerName)
+		{
+			return Path.GetFileNameWithoutExtension (sourceLayerName);
+		}
+
+		static bool isGroup (PsdReader.PsdLayer layer)
+		{
+			return layer.children != null;
+		}
+
+		static bool isText (PsdReader.PsdLayer layer)
+		{
+			return layer.isTextLayer;
+		}
+
 		/// <summary>
 		/// Creates an image from texture file.
 		/// </summary>
@@ -75,6 +92,58 @@ namespace PsdUI
 			return gameObject;
 		}
 
+		static bool shouldIgnoreLayer (string layerName)
+		{
+			return layerName.StartsWith ("-");
+		}
+
+		GameObject createText (string layerName, string fontName, float fontSize, string textString)
+		{
+			var gameObject = new GameObject (layerName, typeof (RectTransform), typeof (Text));
+			var text = gameObject.GetComponent<Text> ();
+
+			text.text = textString;
+			text.fontSize = (int)fontSize;
+			text.verticalOverflow = VerticalWrapMode.Overflow;
+			text.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+			text.font = findFontByName (fontName);
+
+			return gameObject;
+		}
+
+		static bool isFontLike (string[] fontNames, string fontNameToCompare)
+		{
+			foreach (var fontName in fontNames) {
+				var name = fontName.Replace (" ", "");
+				Debug.Log ("Comparing font " + name + " to " + fontNameToCompare);
+				if (name.Contains (fontNameToCompare)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		Font findFontByName (string fontName)
+		{
+			Debug.Log ("Searching font by name " + fontName);
+			var fonts = Directory.GetFiles (_fontsFolder, "*.ttf");
+
+			foreach (var fontFileName in fonts) {
+				Debug.Log ("Loading font " + fontFileName);
+				var fontFilePath = Path.Combine (_fontsFolder, Path.GetFileName (fontFileName));
+				var font = Resources.LoadAssetAtPath<Font> (fontFilePath);
+
+				if (isFontLike (font.fontNames, fontName)) {
+					return font;
+				}
+
+				Resources.UnloadAsset (font);
+			}
+
+			return null;
+		}
 
 		void updateGameObject (GameObject layerGameObject, PsdReader.PsdLayer layer, Size canvasSize)
 		{
@@ -88,19 +157,24 @@ namespace PsdUI
 			layerRectTransform.sizeDelta = new Vector2 (width, height);
 			layerRectTransform.position = new Vector3 (x + width / 2, canvasSize.Height - y - height / 2, 0);
 
-			if (layer.children != null) {
+			if (isGroup (layer)) {
 				foreach (var childLayer in layer.children) {
-					var layerTransform = layerGameObject.transform.FindChild (childLayer.name);
+					if (shouldIgnoreLayer (childLayer.name)) continue;
+
+					var layerName = cleanLayerName (childLayer.name);
+					var layerTransform = layerGameObject.transform.FindChild (layerName);
 					
 					GameObject gameObject;
 					
 					if (layerTransform == null) {
-						var layerFileName = Path.Combine (_sourceImagesFolder, PsdUtility.imageNameFromLayerName (childLayer.name));
+						var layerFileName = Path.Combine (_sourceImagesFolder, PsdUtility.imageNameFromLayerName (layerName));
 
-						if (childLayer.children == null) {
-							gameObject = createImageFromFile (childLayer.name, layerFileName);
+						if (isGroup (childLayer)) {
+							gameObject = new GameObject (layerName, typeof (RectTransform));
+						} else if (isText (childLayer)) {
+							gameObject = createText (layerName, childLayer.fontName, childLayer.fontSize, childLayer.text);
 						} else {
-							gameObject = new GameObject (childLayer.name, typeof (RectTransform));
+							gameObject = createImageFromFile (layerName, layerFileName);
 						}
 						var rectTransform = gameObject.GetComponent<RectTransform> ();
 						rectTransform.SetParent (layerGameObject.transform);

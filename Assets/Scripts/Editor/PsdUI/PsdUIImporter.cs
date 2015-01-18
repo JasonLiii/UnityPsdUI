@@ -10,6 +10,7 @@ namespace PsdUI
 		const string PsdUiExtension = ".ui.psd";
 		const string TargetPrefabFolder = "ui";
 		const string TextureFolder = "layers";
+		const string FontsFolder = "fonts";
 		const string GeneratorAssetsSuffix = "-assets";
 
 		static Dictionary<string, PsdImportContext> _importContextList = new Dictionary<string, PsdImportContext> ();
@@ -124,10 +125,11 @@ namespace PsdUI
 
 			var assetDirectory = Path.GetDirectoryName (assetPath);
 			var layersOutputDirectory = Path.Combine (assetDirectory, TextureFolder);
+			var fontsDirectory = Path.Combine (assetDirectory, FontsFolder);
 			var uiFolder = Path.Combine (assetDirectory, "ui");
 			var uiPrefabPath = Path.Combine (uiFolder, Path.GetFileNameWithoutExtension (assetPath) + ".prefab");
 
-			var psdLayout = new PsdLayout (layersOutputDirectory);
+			var psdLayout = new PsdLayout (layersOutputDirectory, fontsDirectory);
 
 			psdLayout.createOrUpdatePrefab (uiPrefabPath, context.rootLayer);
 		}
