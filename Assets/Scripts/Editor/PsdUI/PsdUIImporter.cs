@@ -10,6 +10,7 @@ namespace PsdUI
 		const string PsdUiExtension = ".ui.psd";
 		const string TargetPrefabFolder = "ui";
 		const string TextureFolder = "layers";
+		const string GeneratorAssetsSuffix = "-assets";
 
 		static Dictionary<string, PsdImportContext> _importContextList = new Dictionary<string, PsdImportContext> ();
 
@@ -32,6 +33,19 @@ namespace PsdUI
 			}
 
 			return false;
+		}
+
+		static string assetsDirectoryForPsd (string psdFileName)
+		{
+			var directoryName = Path.GetDirectoryName (psdFileName);
+			var baseName = Path.GetFileNameWithoutExtension (psdFileName);
+			return Path.Combine (directoryName, baseName + GeneratorAssetsSuffix);
+		}
+
+		static bool shouldExtractLayers (string psdFileName)
+		{
+			var assetsDirectory = assetsDirectoryForPsd (psdFileName);
+			return !Directory.Exists (assetsDirectory);
 		}
 
 	
@@ -65,7 +79,13 @@ namespace PsdUI
 			var assetDirectory = Path.GetDirectoryName (assetPath);
 			var layersOutputDirectory = Path.Combine (assetDirectory, TextureFolder);
 			
-			var extractedFiles = psdReader.extractLayers (layersOutputDirectory);
+			List<string> extractedFiles;
+			if (shouldExtractLayers (assetPath)) {
+				extractedFiles = psdReader.extractLayers (layersOutputDirectory);
+			} else {
+				extractedFiles = copyAssets (assetPath, layersOutputDirectory);
+			}
+
 			var rootLayer = psdReader.layersHierarchy;
 
 			var importContext = new PsdImportContext {
@@ -76,6 +96,22 @@ namespace PsdUI
 			_importContextList[assetPath] = importContext;
 			
 			AssetDatabase.Refresh ();
+		}
+
+		static List<string> copyAssets (string psdFileName, string layersOutputDirectory)
+		{
+			var assetsDirectory = assetsDirectoryForPsd (psdFileName);
+			var files = new List<string> (Directory.GetFiles (assetsDirectory));
+
+			foreach (var file in files) {
+				var fileName = Path.GetFileName (file);
+				var source = Path.Combine (assetsDirectory, fileName);
+				var target = Path.Combine (layersOutputDirectory, fileName);
+
+				File.Copy (source, target, true);
+			}
+
+			return files;
 		}
 
 		static void createLayoutFromPsd (string assetPath)
