@@ -1,4 +1,7 @@
-﻿namespace PhotoshopFile
+﻿using System.Threading;
+using System.Globalization;
+
+namespace PhotoshopFile
 {
     using System;
     using System.Collections.Generic;
@@ -43,6 +46,9 @@
             Layers = new List<Layer>();
             ImageResources = new List<ImageResource>();
 
+			var localeSettings = Thread.CurrentThread.CurrentCulture;
+			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 BinaryReverseReader reader = new BinaryReverseReader(fileStream);
@@ -52,6 +58,8 @@
                 LoadLayerAndMaskInfo(reader);
                 LoadImage(reader);
             }
+
+			Thread.CurrentThread.CurrentCulture = localeSettings;
         }
 
         /// <summary>
