@@ -72,6 +72,20 @@ namespace PsdUI
 			return layer.isTextLayer;
 		}
 
+		//TODO: give the method a proper name
+		static float toFloat (byte b)
+		{
+			return ((float)b) / 255;
+		}
+
+		static UnityEngine.Color convertColorToUnity (PhotoshopFile.Auxiliary.Color color)
+		{
+			return new UnityEngine.Color (toFloat (color.R),
+			                              toFloat (color.G),
+			                              toFloat (color.B),
+			                              toFloat (color.A));
+		}
+
 		/// <summary>
 		/// Creates an image from texture file.
 		/// </summary>
@@ -97,7 +111,7 @@ namespace PsdUI
 			return layerName.StartsWith ("-");
 		}
 
-		GameObject createText (string layerName, string fontName, float fontSize, string textString)
+		GameObject createText (string layerName, string fontName, float fontSize, UnityEngine.Color fontColor, string textString)
 		{
 			var gameObject = new GameObject (layerName, typeof (RectTransform), typeof (Text));
 			var text = gameObject.GetComponent<Text> ();
@@ -106,6 +120,7 @@ namespace PsdUI
 			text.fontSize = (int)fontSize;
 			text.verticalOverflow = VerticalWrapMode.Overflow;
 			text.horizontalOverflow = HorizontalWrapMode.Overflow;
+			text.color = fontColor;
 
 			text.font = findFontByName (fontName);
 
@@ -154,6 +169,8 @@ namespace PsdUI
 			layerRectTransform.sizeDelta = new Vector2 (width, height);
 			layerRectTransform.position = new Vector3 (x + width / 2, canvasSize.Height - y - height / 2, 0);
 
+			//TODO: add updaters for different UI objects
+
 			if (isGroup (layer)) {
 				foreach (var childLayer in layer.children) {
 					if (shouldIgnoreLayer (childLayer.name)) continue;
@@ -169,7 +186,10 @@ namespace PsdUI
 						if (isGroup (childLayer)) {
 							gameObject = new GameObject (layerName, typeof (RectTransform));
 						} else if (isText (childLayer)) {
-							gameObject = createText (layerName, childLayer.fontName, childLayer.fontSize, childLayer.text);
+							gameObject = createText (layerName, childLayer.fontName,
+							                         childLayer.fontSize,
+							                         convertColorToUnity (childLayer.fillColor),
+							                         childLayer.text);
 						} else {
 							gameObject = createImageFromFile (layerName, layerFileName);
 						}
