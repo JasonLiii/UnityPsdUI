@@ -10,6 +10,8 @@ namespace PsdUI
 		const string PsdUiExtension = ".ui.psd";
 		const string TargetPrefabFolder = "ui";
 		const string TextureFolder = "layers";
+		const string FontsFolder = "fonts";
+		const string GeneratorAssetsSuffix = "-assets";
 
 		static Dictionary<string, PsdImportContext> _importContextList = new Dictionary<string, PsdImportContext> ();
 
@@ -32,6 +34,19 @@ namespace PsdUI
 			}
 
 			return false;
+		}
+
+		static string assetsDirectoryForPsd (string psdFileName)
+		{
+			var directoryName = Path.GetDirectoryName (psdFileName);
+			var baseName = Path.GetFileNameWithoutExtension (psdFileName);
+			return Path.Combine (directoryName, baseName + GeneratorAssetsSuffix);
+		}
+
+		static bool shouldExtractLayers (string psdFileName)
+		{
+			var assetsDirectory = assetsDirectoryForPsd (psdFileName);
+			return !Directory.Exists (assetsDirectory);
 		}
 
 	
@@ -65,7 +80,13 @@ namespace PsdUI
 			var assetDirectory = Path.GetDirectoryName (assetPath);
 			var layersOutputDirectory = Path.Combine (assetDirectory, TextureFolder);
 			
-			var extractedFiles = psdReader.extractLayers (layersOutputDirectory);
+			List<string> extractedFiles;
+			if (shouldExtractLayers (assetPath)) {
+				extractedFiles = psdReader.extractLayers (layersOutputDirectory);
+			} else {
+				extractedFiles = copyAssets (assetPath, layersOutputDirectory);
+			}
+
 			var rootLayer = psdReader.layersHierarchy;
 
 			var importContext = new PsdImportContext {
@@ -78,6 +99,25 @@ namespace PsdUI
 			AssetDatabase.Refresh ();
 		}
 
+		static List<string> copyAssets (string psdFileName, string layersOutputDirectory)
+		{
+			Directory.CreateDirectory (layersOutputDirectory);
+			var assetsDirectory = assetsDirectoryForPsd (psdFileName);
+			var result = new List<string> ();
+			var files = Directory.GetFiles (assetsDirectory);
+
+			foreach (var file in files) {
+				var fileName = Path.GetFileName (file);
+				var source = Path.Combine (assetsDirectory, fileName);
+				var target = Path.Combine (layersOutputDirectory, fileName);
+
+				File.Copy (source, target, true);
+				result.Add (target);
+			}
+
+			return result;
+		}
+
 		static void createLayoutFromPsd (string assetPath)
 		{
 			PsdImportContext context;
@@ -88,10 +128,11 @@ namespace PsdUI
 
 			var assetDirectory = Path.GetDirectoryName (assetPath);
 			var layersOutputDirectory = Path.Combine (assetDirectory, TextureFolder);
+			var fontsDirectory = Path.Combine (assetDirectory, FontsFolder);
 			var uiFolder = Path.Combine (assetDirectory, "ui");
 			var uiPrefabPath = Path.Combine (uiFolder, Path.GetFileNameWithoutExtension (assetPath) + ".prefab");
 
-			var psdLayout = new PsdLayout (layersOutputDirectory);
+			var psdLayout = new PsdLayout (layersOutputDirectory, fontsDirectory);
 
 			psdLayout.createOrUpdatePrefab (uiPrefabPath, context.rootLayer);
 		}

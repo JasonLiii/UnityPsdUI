@@ -1,4 +1,7 @@
-﻿namespace PhotoshopFile
+﻿using System.Threading;
+using System.Globalization;
+
+namespace PhotoshopFile
 {
     using System;
     using System.Collections.Generic;
@@ -43,6 +46,9 @@
             Layers = new List<Layer>();
             ImageResources = new List<ImageResource>();
 
+			var localeSettings = Thread.CurrentThread.CurrentCulture;
+			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 BinaryReverseReader reader = new BinaryReverseReader(fileStream);
@@ -52,6 +58,8 @@
                 LoadLayerAndMaskInfo(reader);
                 LoadImage(reader);
             }
+
+			Thread.CurrentThread.CurrentCulture = localeSettings;
         }
 
         /// <summary>
@@ -143,14 +151,14 @@
         {
             if (new string(reader.ReadChars(4)) != "8BPS")
             {
-                UnityEngine.Debug.LogError("The given stream is not a valid PSD file");
+                //UnityEngine.Debug.LogError("The given stream is not a valid PSD file");
                 throw new IOException("The given stream is not a valid PSD file");
             }
 
             Version = reader.ReadInt16();
             if (Version != 1)
             {
-                UnityEngine.Debug.LogError("The PSD file has an invalid version");
+                //UnityEngine.Debug.LogError("The PSD file has an invalid version");
                 throw new IOException("The PSD file has an invalid version");
             }
 
