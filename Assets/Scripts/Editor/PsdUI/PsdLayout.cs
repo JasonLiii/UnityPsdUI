@@ -17,6 +17,15 @@ namespace PsdUI
 			_fontsFolder = fontsFolder;
 		}
 
+		static PsdReader.PsdLayer skipFirstLayer (PsdReader.PsdLayer layer)
+		{
+			if (layer.children.Count == 1 && layer.children[0].children != null) {
+				return layer.children[0];
+			}
+
+			return layer;
+		}
+
 		public void createOrUpdatePrefab (string prefabFileName, PsdReader.PsdLayer rootLayer)
 		{
 			var prefabDirectory = Path.GetDirectoryName (prefabFileName);
@@ -35,7 +44,8 @@ namespace PsdUI
 				rootGameObject = GameObject.Instantiate (rootGameObjectPrefab) as GameObject;
 			}
 
-			updateGameObject (rootGameObject, rootLayer, rootLayer.size);
+			var layers = skipFirstLayer (rootLayer);
+			updateGameObject (rootGameObject, layers, rootLayer.size);
 			
 			if (createNew) {
 				PrefabUtility.CreatePrefab (prefabFileName, rootGameObject);
