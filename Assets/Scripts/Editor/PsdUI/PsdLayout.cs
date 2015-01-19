@@ -72,6 +72,11 @@ namespace PsdUI
 			return layer.isTextLayer;
 		}
 
+		static bool shouldDigDeeper (PsdReader.PsdLayer layer)
+		{
+			return !layer.name.EndsWith (".png");
+		}
+
 		//TODO: give the method a proper name
 		static float toFloat (byte b)
 		{
@@ -171,7 +176,7 @@ namespace PsdUI
 
 			//TODO: add updaters for different UI objects
 
-			if (isGroup (layer)) {
+			if (isGroup (layer) && shouldDigDeeper (layer)) {
 				foreach (var childLayer in layer.children) {
 					if (shouldIgnoreLayer (childLayer.name)) continue;
 
