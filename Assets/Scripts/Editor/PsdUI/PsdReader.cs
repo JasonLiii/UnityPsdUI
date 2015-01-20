@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using PhotoshopFile;
 using PhotoshopFile.Auxiliary;
+using System;
 
 namespace PsdUI
 {
@@ -78,6 +79,37 @@ namespace PsdUI
 			}
 
 			return extractedFiles;
+		}
+
+		public static Rectangle getGroupBounds (PsdLayer parentLayer)
+		{
+			if (parentLayer.children == null) {
+				return new Rectangle (parentLayer.position, parentLayer.size);
+			}
+
+			var rect = new Rectangle ();
+
+			foreach (var layer in parentLayer.children) {
+				var childRect = getGroupBounds (layer);
+				if (rect.Size.Height == 0) {
+					rect = childRect;
+					continue;
+				}
+
+				addToBounds (rect, childRect);
+			}
+
+			return rect;
+		}
+
+		static Rectangle addToBounds (Rectangle sourceRect, Rectangle newRect)
+		{
+			var left = Math.Min (sourceRect.Left, newRect.Left);
+			var right = Math.Max (sourceRect.Right, newRect.Right);
+			var top = Math.Min (sourceRect.Top, newRect.Top);
+			var bottom = Math.Max (sourceRect.Bottom, newRect.Bottom);
+
+			return new Rectangle (left, top, right - left, bottom - top);
 		}
 
 		PsdLayer createLayersHierarchy ()
