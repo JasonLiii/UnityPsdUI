@@ -137,7 +137,32 @@ namespace PsdUI
 
 			var psdLayout = new PsdLayout (layersOutputDirectory, fontsDirectory);
 
+			convertPngGroupsToLayers (context.rootLayer);
+
 			psdLayout.createOrUpdatePrefab (uiPrefabPath, context.rootLayer);
+		}
+
+		static void convertPngGroupsToLayers (PsdReader.PsdLayer rootLayer)
+		{
+			if (rootLayer.children == null) {
+				return;
+			}
+
+			if (isPngFile (rootLayer.name)) {
+				var bounds = PsdReader.getGroupBounds (rootLayer);
+				rootLayer.position = bounds.Location;
+				rootLayer.size = bounds.Size;
+				return;
+			}
+
+			foreach (var layer in rootLayer.children) {
+				convertPngGroupsToLayers (layer);
+			}
+		}
+
+		static bool isPngFile (string name)
+		{
+			return name.EndsWith (".png");
 		}
 
 		/// <summary>
