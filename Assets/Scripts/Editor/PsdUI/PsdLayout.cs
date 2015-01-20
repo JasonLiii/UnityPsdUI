@@ -44,8 +44,9 @@ namespace PsdUI
 				rootGameObject = GameObject.Instantiate (rootGameObjectPrefab) as GameObject;
 			}
 
-			var layers = skipFirstLayer (rootLayer);
-			updateGameObject (rootGameObject, layers, rootLayer.size);
+			//var layers = skipFirstLayer (rootLayer);
+			//updateGameObject (rootGameObject, layers, rootLayer.size);
+			updateGameObject (rootGameObject, rootLayer, rootLayer.size);
 			
 			if (createNew) {
 				PrefabUtility.CreatePrefab (prefabFileName, rootGameObject);
@@ -82,11 +83,6 @@ namespace PsdUI
 			return layer.isTextLayer;
 		}
 
-		static bool shouldDigDeeper (PsdReader.PsdLayer layer)
-		{
-			return !layer.name.EndsWith (".png");
-		}
-
 		//TODO: give the method a proper name
 		static float toFloat (byte b)
 		{
@@ -121,9 +117,9 @@ namespace PsdUI
 			return gameObject;
 		}
 
-		static bool shouldIgnoreLayer (string layerName)
+		static bool shouldIgnoreLayer (PsdReader.PsdLayer layer)
 		{
-			return layerName.StartsWith ("-");
+			return layer.name.StartsWith ("-") || !layer.visible;
 		}
 
 		GameObject createText (string layerName, string fontName, float fontSize, UnityEngine.Color fontColor, string textString)
@@ -186,9 +182,9 @@ namespace PsdUI
 
 			//TODO: add updaters for different UI objects
 
-			if (isGroup (layer) && shouldDigDeeper (layer)) {
+			if (isGroup (layer)) {
 				foreach (var childLayer in layer.children) {
-					if (shouldIgnoreLayer (childLayer.name)) continue;
+					if (shouldIgnoreLayer (childLayer)) continue;
 
 					var layerName = cleanLayerName (childLayer.name);
 					var layerTransform = layerGameObject.transform.FindChild (layerName);
