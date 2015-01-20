@@ -35,12 +35,15 @@ namespace PhotoshopFile
         /// </summary>
         private int depth;
 
+		bool _dontReadChannels;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PsdFile"/> class.
         /// </summary>
         /// <param name="fileName">The filepath of the PSD file to open.</param>
-        public PsdFile(string fileName)
+		public PsdFile(string fileName, bool dontReadChannels = false)
         {
+			_dontReadChannels = dontReadChannels;
             Category = string.Empty;
             Version = 1;
             Layers = new List<Layer>();
@@ -283,23 +286,21 @@ namespace PhotoshopFile
                 Layers.Add(new Layer(reader, this));
             }
 
-            foreach (Layer layer in Layers)
-            {
-                foreach (Channel channel in layer.Channels)
-                {
-                    if (channel.ID != -2)
-                    {
-                        channel.LoadPixelData(reader);
-                    }
-                }
+			if (!_dontReadChannels) {
+				foreach (Layer layer in Layers) {
+					foreach (Channel channel in layer.Channels) {
+						if (channel.ID != -2) {
+							channel.LoadPixelData (reader);
+						}
+					}
 
-                layer.MaskData.LoadPixelData(reader);
-            }
+					layer.MaskData.LoadPixelData (reader);
+				}
 
-            if (reader.BaseStream.Position % 2L == 1L)
-            {
-                reader.ReadByte();
-            }
+				if (reader.BaseStream.Position % 2L == 1L) {
+					reader.ReadByte ();
+				}
+			}
 
             reader.BaseStream.Position = position + num1;
         }

@@ -12,6 +12,8 @@ namespace PsdUI
 
 		PsdFile _psdFile;
 
+		public bool hasChannelsData { get; private set; }
+
 		public class PsdLayer
 		{
 			public string name;
@@ -35,10 +37,11 @@ namespace PsdUI
 			}
 		}
 
-		public PsdReader (string psdFileName)
+		public PsdReader (string psdFileName, bool dontReadChannels = false)
 		{
+			hasChannelsData = !dontReadChannels;
 			_psdFileName = psdFileName;
-			_psdFile = new PsdFile (psdFileName);
+			_psdFile = new PsdFile (psdFileName, dontReadChannels);
 		}
 
 		static bool canExtract (Layer layer)
@@ -49,6 +52,10 @@ namespace PsdUI
 		public List<string> extractLayers (string layersOutputDirectory)
 		{
 			var extractedFiles = new List<string> ();
+
+			if (!hasChannelsData) {
+				return extractedFiles;
+			}
 
 			Directory.CreateDirectory (layersOutputDirectory);
 			
