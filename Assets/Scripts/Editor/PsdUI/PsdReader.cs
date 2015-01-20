@@ -21,6 +21,8 @@ namespace PsdUI
 			public Point position;
 			public Size size;
 
+			public bool visible;
+
 			public bool isTextLayer;
 			public string fontName;
 			public float fontSize;
@@ -104,14 +106,13 @@ namespace PsdUI
 				} else if (isLayerGroupBegin (layer)) {
 					var layerGroup = new PsdLayer {
 						name = layer.Name,
+						visible = layer.Visible,
 						children = new List<PsdLayer> ()
 					};
 
 					currentRoot.children.Add (layerGroup);
 
 					layerStack.Push (layerGroup);
-					continue;
-				} else if (!layer.Visible) {
 					continue;
 				}
 
@@ -129,6 +130,7 @@ namespace PsdUI
 		{
 			var psdLayer = new PsdLayer {
 				name = layer.Name,
+				visible = layer.Visible,
 				size = new Size (layer.Rect.Width, layer.Rect.Height),
 				position = new Point (layer.Rect.X, layer.Rect.Y),
 				isTextLayer = layer.IsTextLayer,
