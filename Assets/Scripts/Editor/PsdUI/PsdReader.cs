@@ -85,7 +85,9 @@ namespace PsdUI
 			var rootLayer = new PsdLayer {
 				name = Path.GetFileNameWithoutExtension (_psdFileName),
 				children = new List<PsdLayer> (),
-				size = new Size (_psdFile.Width, _psdFile.Height)
+				size = new Size (_psdFile.Width, _psdFile.Height),
+				visible = true
+
 			};
 
 			var layerStack = new Stack<PsdLayer> ();
