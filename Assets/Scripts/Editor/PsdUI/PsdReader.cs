@@ -146,7 +146,9 @@ namespace PsdUI
 
 		static bool isLayerGroupBegin (Layer layer)
 		{
-			return layer.IsPixelDataIrrelevant && layer.Rect.Height == 0;
+			//TODO: can't say for sure that is the begining of a group =(
+			//return layer.IsPixelDataIrrelevant && layer.Rect.Height == 0;
+			return layer.isFolder;
 		}
 		
 		static bool isLayerGroupEnd (Layer layer)
