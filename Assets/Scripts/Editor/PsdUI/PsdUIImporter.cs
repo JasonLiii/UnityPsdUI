@@ -76,12 +76,15 @@ namespace PsdUI
 
 		static void importPsdUi (string assetPath)
 		{
-			var psdReader = new PsdReader (assetPath);
+			var extractLayers = shouldExtractLayers (assetPath);
+
+			var psdReader = new PsdReader (assetPath, !extractLayers);
 			var assetDirectory = Path.GetDirectoryName (assetPath);
 			var layersOutputDirectory = Path.Combine (assetDirectory, TextureFolder);
 			
 			List<string> extractedFiles;
-			if (shouldExtractLayers (assetPath)) {
+
+			if (extractLayers) {
 				extractedFiles = psdReader.extractLayers (layersOutputDirectory);
 			} else {
 				extractedFiles = copyAssets (assetPath, layersOutputDirectory);
