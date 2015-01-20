@@ -119,18 +119,20 @@ namespace PhotoshopFile
 
             foreach (AdjustmentLayerInfo adjustmentLayerInfo in AdjustmentInfo)
             {
-                if (adjustmentLayerInfo.Key == "TySh")
-                {
-                    ReadTextLayer(adjustmentLayerInfo.DataReader);
-                }
-                else if (adjustmentLayerInfo.Key == "luni")
-                {
-                    // read the unicode name
-                    BinaryReverseReader dataReader = adjustmentLayerInfo.DataReader;
-                    dataReader.ReadBytes(3);
-                    dataReader.ReadByte();
-                    Name = dataReader.ReadString().TrimEnd(new char[1]);
-                }
+				if (adjustmentLayerInfo.Key == "TySh") {
+					ReadTextLayer (adjustmentLayerInfo.DataReader);
+				} else if (adjustmentLayerInfo.Key == "luni") {
+					// read the unicode name
+					BinaryReverseReader dataReader = adjustmentLayerInfo.DataReader;
+					dataReader.ReadBytes (3);
+					dataReader.ReadByte ();
+					Name = dataReader.ReadString ().TrimEnd (new char[1]);
+				} else if (adjustmentLayerInfo.Key == "lsct") {
+					BinaryReverseReader dataReader = adjustmentLayerInfo.DataReader;
+					var type = dataReader.ReadInt32 ();
+
+					isFolder = type == 1 || type == 2;
+				}
             }
 
             reader.BaseStream.Position = num4;
@@ -177,6 +179,8 @@ namespace PhotoshopFile
         public string WarpStyle { get; private set; }
 
         #endregion
+
+		public bool isFolder { get; set; }
 
         /// <summary>
         /// Gets a list of the children <see cref="Layer"/>s that belong to this Layer.
